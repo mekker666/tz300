@@ -4,7 +4,7 @@
   gather_facts: no
   vars:
     sonicwall_api_url: "https://{{ sonicwall_ip }}/api/sonicos/auth"
-    sonicwall_ip: "192.168.1.1"  # Change this to the actual IP of the SonicWall
+    sonicwall_ip: "192.168.168.168"  # Change this to the actual IP of the SonicWall
     api_username: "admin"         # Change to your SonicWall username
     api_password: "password"      # Change to your SonicWall password
     sonicos_api_response: {}
