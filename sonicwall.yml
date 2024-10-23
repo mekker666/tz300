@@ -1,45 +1,37 @@
 ---
-- name: Get general information from SonicWall TZ300
-  hosts: localhost
+- name: Extract general info from SonicWall TZ300
+  hosts: sonicwall
   gather_facts: no
+  connection: network_cli
   vars:
-    sonicwall_ip: "192.168.168.168"  # Replace with the actual SonicWall IP address
-    sonicwall_user: "admin"       # Replace with SonicWall API username
-    sonicwall_password: "password"  # Replace with SonicWall API password
-    api_version: "v1"             # API version, default is usually v1
+    ansible_network_os: ansible.netcommon.sonicos
+    ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"  # Define your user as an environment variable
+    ansible_password: "{{ lookup('env', 'ANSIBLE_PASS') }}"  # Define your password as an environment variable
 
   tasks:
-    - name: Authenticate to SonicWall and get token
-      uri:
-        url: "https://{{ sonicwall_ip }}/api/sonicos/"
-        method: POST
-        body_format: json
-        body:
-          username: "{{ sonicwall_user }}"
-          password: "{{ sonicwall_password }}"
-        headers:
-          Content-Type: "application/json"
-        validate_certs: no  # Disable SSL verification for self-signed certificates
-        status_code: 200
-        return_content: yes
-      register: auth_response
+    - name: Display system information (firmware, uptime, etc.)
+      ansible.netcommon.cli_command:
+        command: "show system-info"
+      register: system_info_output
 
-    - name: Extract authentication token
-      set_fact:
-        auth_token: "{{ auth_response.json.token }}"
-
-    - name: Get general system information
-      uri:
-        url: "https://{{ sonicwall_ip }}/api/{{ api_version }}/system/status"
-        method: GET
-        headers:
-          Content-Type: "application/json"
-          Authorization: "Bearer {{ auth_token }}"
-        validate_certs: no
-        status_code: 200
-        return_content: yes
-      register: system_info
-
-    - name: Display system information
+    - name: Print system information
       debug:
-        msg: "{{ system_info.json }}"
+        msg: "{{ system_info_output.stdout_lines }}"
+
+    - name: Display interface status
+      ansible.netcommon.cli_command:
+        command: "show interfaces status"
+      register: interfaces_output
+
+    - name: Print interfaces status
+      debug:
+        msg: "{{ interfaces_output.stdout_lines }}"
+
+    - name: Display CPU and memory usage
+      ansible.netcommon.cli_command:
+        command: "show cpu-usage"
+      register: cpu_usage_output
+
+    - name: Print CPU and memory usage
+      debug:
+        msg: "{{ cpu_usage_output.stdout_lines }}"
