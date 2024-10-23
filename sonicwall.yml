@@ -4,7 +4,7 @@
   gather_facts: no
   vars:
     sonicwall_api_url: "https://{{ sonicwall_ip }}/api/sonicos/auth"
-    sonicwall_ip: "192.168.168.168"  # Change this to the actual IP of the SonicWall
+    sonicwall_ip: "192.168.168.168"  # Change to the actual IP of your SonicWall
     api_username: "admin"         # Change to your SonicWall username
     api_password: "password"      # Change to your SonicWall password
     sonicos_api_response: {}
@@ -23,7 +23,7 @@
           Content-Type: "application/json"
         return_content: yes
         status_code: 200
-        validate_certs: no  # Ignore SSL certificate validation for local devices
+        validate_certs: no  # Ignore SSL certificate validation
       register: login_response
 
     - name: Extract auth token from login response
@@ -42,7 +42,7 @@
         headers:
           Authorization: "Bearer {{ sonicos_token }}"
         return_content: yes
-        validate_certs: no  # Ignore SSL certificate validation for local devices
+        validate_certs: no  # Ignore SSL certificate validation
       register: sonicos_api_response
 
     - name: Check if Sonicos API call was successful
