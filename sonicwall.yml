@@ -1,6 +1,6 @@
 ---
 - name: Sonicos API playbook for local SonicWall device
-  hosts: 192.168.168.168
+  hosts: localhost
   gather_facts: no
   vars:
     sonicwall_api_url: "https://{{ sonicwall_ip }}/api/sonicos/auth"
