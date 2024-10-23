@@ -1,37 +1,34 @@
 ---
-- name: Extract general info from SonicWall TZ300
-  hosts: sonicwall
+- name: Get SonicWall TZ300 settings
+  hosts: localhost
   gather_facts: no
-  connection: network_cli
+
   vars:
-    ansible_network_os: ansible.builtin.ssh
-    ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"  # Define your user as an environment variable
-    ansible_password: "{{ lookup('env', 'ANSIBLE_PASS') }}"  # Define your password as an environment variable
+    sonicwall_ip: "192.168.168.168"  # Replace with the SonicWall IP address
+    sonicwall_username: "admin"   # Replace with your SonicWall API username
+    sonicwall_password: "password"  # Replace with your SonicWall API password
 
   tasks:
-    - name: Display system information (firmware, uptime, etc.)
-      ansible.netcommon.cli_command:
-        command: "show system-info"
-      register: system_info_output
+    - name: Get SonicWall general system information
+      uri:
+        url: "https://{{ sonicwall_ip }}/api/sonicos/system"
+        method: GET
+        user: "{{ sonicwall_username }}"
+        password: "{{ sonicwall_password }}"
+        headers:
+          Content-Type: "application/json"
+        validate_certs: no  # Disable SSL verification, consider enabling it if using proper certificates
+        return_content: yes
+      register: sonicwall_response
 
-    - name: Print system information
+    - name: Print the SonicWall response
       debug:
-        msg: "{{ system_info_output.stdout_lines }}"
+        var: sonicwall_response.content
 
-    - name: Display interface status
-      ansible.netcommon.cli_command:
-        command: "show interfaces status"
-      register: interfaces_output
-
-    - name: Print interfaces status
+    - name: Parse and display system settings
+      set_fact:
+        sonicwall_system_info: "{{ sonicwall_response.json }}"
+      
+    - name: Display system model and firmware version
       debug:
-        msg: "{{ interfaces_output.stdout_lines }}"
-
-    - name: Display CPU and memory usage
-      ansible.netcommon.cli_command:
-        command: "show cpu-usage"
-      register: cpu_usage_output
-
-    - name: Print CPU and memory usage
-      debug:
-        msg: "{{ cpu_usage_output.stdout_lines }}"
+        msg: "Model: {{ sonicwall_system_info.system.system_model }}, Firmware Version: {{ sonicwall_system_info.system.firmware_version }}"
