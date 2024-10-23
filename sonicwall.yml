@@ -4,7 +4,7 @@
   gather_facts: no
   connection: network_cli
   vars:
-    ansible_network_os: ansible.netcommon.sonicos
+    ansible_network_os: ansible.builtin.ssh
     ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"  # Define your user as an environment variable
     ansible_password: "{{ lookup('env', 'ANSIBLE_PASS') }}"  # Define your password as an environment variable
 
