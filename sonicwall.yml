@@ -1,37 +1,56 @@
 ---
-- name: Get SonicWall TZ300 settings
+- name: Sonicos API playbook for local SonicWall device
   hosts: localhost
   gather_facts: no
-
   vars:
-    sonicwall_ip: "192.168.168.168"  # Replace with your SonicWall IP address
-    sonicwall_username: "admin"   # Replace with your SonicWall API username
-    sonicwall_password: "password"  # Replace with your SonicWall API password
+    sonicwall_api_url: "https://{{ sonicwall_ip }}/api/sonicos/auth"
+    sonicwall_ip: "192.168.168.168"  # Change this to the actual IP of the SonicWall
+    api_username: "admin"         # Change to your SonicWall username
+    api_password: "password"      # Change to your SonicWall password
+    sonicos_api_response: {}
+    sonicos_token: ""
 
   tasks:
-    - name: Get SonicWall general system information
+    - name: Login to SonicWall API and retrieve token
       uri:
-        url: "https://{{ sonicwall_ip }}/api/sonicos/system"
-        method: GET
-        user: "{{ sonicwall_username }}"
-        password: "{{ sonicwall_password }}"
+        url: "{{ sonicwall_api_url }}"
+        method: POST
+        body_format: json
+        body:
+          username: "{{ api_username }}"
+          password: "{{ api_password }}"
         headers:
           Content-Type: "application/json"
-          Accept: "application/json"
-        validate_certs: no  # Disable SSL verification, consider enabling it if using proper certificates
         return_content: yes
-      register: sonicwall_response
-      no_log: true  # Ensures that sensitive info like passwords isn't printed
+        status_code: 200
+        validate_certs: no  # Ignore SSL certificate validation for local devices
+      register: login_response
 
-    - name: Print the SonicWall response
-      debug:
-        var: sonicwall_response.content
-        # This is safe, as it's the response, not the credentials
-
-    - name: Parse and display system settings
+    - name: Extract auth token from login response
       set_fact:
-        sonicwall_system_info: "{{ sonicwall_response.json }}"
-      
-    - name: Display system model and firmware version
+        sonicos_token: "{{ login_response.json.token }}"
+
+    - name: Check if login was successful
       debug:
-        msg: "Model: {{ sonicwall_system_info.system.system_model }}, Firmware Version: {{ sonicwall_system_info.system.firmware_version }}"
+        msg: "Login successful, token: {{ sonicos_token }}"
+      when: login_response.status == 200
+
+    - name: Retrieve SonicWall API status
+      uri:
+        url: "https://{{ sonicwall_ip }}/api/sonicos/status"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ sonicos_token }}"
+        return_content: yes
+        validate_certs: no  # Ignore SSL certificate validation for local devices
+      register: sonicos_api_response
+
+    - name: Check if Sonicos API call was successful
+      debug:
+        msg: "API call was successful"
+      when: sonicos_api_response.json.status.success == true
+
+    - name: Display Sonicos API information details
+      debug:
+        msg: "{{ item }}"
+      loop: "{{ sonicos_api_response.json.status.info }}"
