@@ -4,7 +4,7 @@
   gather_facts: no
 
   vars:
-    sonicwall_ip: "192.168.168.168"  # Replace with the SonicWall IP address
+    sonicwall_ip: "192.168.168.168"  # Replace with your SonicWall IP address
     sonicwall_username: "admin"   # Replace with your SonicWall API username
     sonicwall_password: "password"  # Replace with your SonicWall API password
 
@@ -17,7 +17,8 @@
         password: "{{ sonicwall_password }}"
         headers:
           Content-Type: "application/json"
-        validate_certs: no  # Disable SSL verification, consider enabling it if using proper certificates
+          Accept: "application/json"
+        validate_certs: no  # Disable SSL verification, consider enabling if you have proper certs
         return_content: yes
       register: sonicwall_response
 
