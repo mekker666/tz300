@@ -3,7 +3,7 @@
   hosts: localhost
   gather_facts: no
   vars:
-    sonicwall_ip: "192.168.1.1"  # Replace with the actual SonicWall IP address
+    sonicwall_ip: "192.168.168.168"  # Replace with the actual SonicWall IP address
     sonicwall_user: "admin"       # Replace with SonicWall API username
     sonicwall_password: "password"  # Replace with SonicWall API password
     api_version: "v1"             # API version, default is usually v1
