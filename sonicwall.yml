@@ -11,7 +11,7 @@
   tasks:
     - name: Authenticate to SonicWall and get token
       uri:
-        url: "https://{{ sonicwall_ip }}/api/sonicos"
+        url: "https://{{ sonicwall_ip }}/api/sonicos/"
         method: POST
         body_format: json
         body:
